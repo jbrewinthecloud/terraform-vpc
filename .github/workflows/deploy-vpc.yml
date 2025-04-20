@@ -1,9 +1,12 @@
 name: Deploy VPC with Terraform
 
 on:
+  workflow_dispatch:   # Manual trigger via GitHub UI
   push:
     branches:
       - main
+    paths:
+      - '**.tf'        # Only run on Terraform file changes
 
 permissions:
   id-token: write
@@ -36,8 +39,9 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan -out=tfplan
 
+      # Only runs on manual (workflow_dispatch) triggers
       - name: Terraform Apply
-        run: terraform apply -auto-approve
-
+        if: github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve tfplan
